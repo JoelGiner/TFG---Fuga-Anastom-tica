@@ -1,0 +1,2762 @@
+---
+title: "AnalisisInicial"
+author: "Joel Giner"
+date: "2024-10-08"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Carga de librerias
+
+```{r}
+library(readr)
+library(tidyr)
+library(dplyr)
+library(openxlsx)
+```
+
+# Carga de datos
+
+```{r, echo=FALSE, results="hide"}
+data <- read.csv("data/ModeloPredictivoPara_DATA_2024-11-26_1247_anonimizado.csv", sep = ";", colClasses = "character")
+
+errores <- 0
+```
+
+```{r}
+# data <- read_delim("data/ModeloPredictivoPara_DATA_2024-09-10_1022_anonimizado.csv", 
+#     delim = ";", escape_double = FALSE, trim_ws = TRUE)
+# data
+# for(col in colnames(data)){
+#   data[col] <- as.character(data[col])
+# }
+# data
+```
+
+# Análisis observacional columna a columna
+
+```{r}
+i <- 0
+unicos <- c()
+for(columna in colnames(data)){
+  i = i+ 1
+  unicos[i] <- c(unique(data[columna]))
+}
+```
+
+```{r}
+# which(data[,33]==" -")
+# nrow(data)
+# data[1476,33]
+```
+
+```{r}
+l <- c()
+for(v in unicos[[14]]){
+  if(!grepl("-", v)){
+    l <- c(l,v)
+  }
+}
+
+l
+
+```
+
+```{r}
+l <- list()
+for(v in unicos[[37]]){
+  if( grepl("[^0-9]", v)){
+    l <- append(l,v)
+  }
+}
+
+l
+```
+
+```{r}
+#data
+```
+
+# Análisis de errores para su corrección (2a parte)
+
+#### fecha_nacimiento
+
+```{r}
+fechas_nac <- as.Date(data$"fecha_nacimiento", format="%d/%m/%y")
+
+fechas_nac <- na.omit(fechas_nac)
+
+```
+
+#### edad
+
+```{r}
+edades <- as.integer(data[["edad"]])
+edades_sin_na <- na.omit(edades)
+
+
+l <- c()
+for(edad in edades_sin_na[1:715]){
+  if(!(edad<=100 & edad>=18)){
+    l <- c(l,edad)
+  }
+}
+
+errores <- errores + length(l)
+
+```
+
+```{r}
+which(edades==0)
+```
+
+#### peso
+
+```{r}
+pesos <- as.integer(data[["peso"]])
+pesos_sin_na <- na.omit(pesos)
+
+
+l <- c()
+for(peso in pesos_sin_na[1:705]){
+  if(!(peso<=200 & peso>=20)){
+    l <- c(l,peso)
+  }
+}
+
+l  #todo ok
+```
+
+#### imc
+
+```{r}
+imcs <- as.integer(data[["imc"]])
+imcs_sin_na <- na.omit(imcs)
+
+
+l <- c()
+for(imc in imcs_sin_na[1:685]){
+  if(!(imc<=80 & imc>=10)){
+    l <- c(l,imc)
+  }
+}
+
+errores <- errores + length(l)
+```
+
+```{r}
+which(imcs==2664)
+```
+
+#### ct
+
+```{r}
+l <- c()
+for(v in unicos[[14]]){
+  if(!grepl("-", v)){
+    l <- c(l,v)
+  }
+}
+
+l
+
+#solo 6 categorías y en la tabla ponen 11
+```
+
+#### cn
+
+```{r}
+#CN
+unicos[15]
+#ok
+```
+
+#### cm
+
+```{r}
+#CM
+unicos[16]
+#ok
+```
+
+#### ecog
+
+```{r}
+unicos[17]
+```
+
+#### asa
+
+```{r}
+unicos[18]
+#ok
+
+```
+
+#### dm
+
+```{r}
+unicos[19]
+#ok
+
+```
+
+#### hta
+
+```{r}
+unicos[20]
+#ok
+
+```
+
+Hasta la columna 29 todo son variables con valores: "0" "" "1"
+
+La columna 30 es texto explicando antecedentes personales.
+
+La columna 31 es si han tomado o no los datos basales.
+
+#### frec_card
+
+```{r}
+frec_car <- na.omit(as.numeric(data[[32]]))[1:672]
+
+l <- c()
+for(v in frec_car){
+  if(!(v>=1 & v<=300)){
+    l <- c(l,v)
+  }
+}
+
+errores <- errores + len(l)
+
+which(data[[32]]=="369.103")
+```
+
+#### frec_resp
+
+```{r}
+unicos[[33]]
+frec_resp <- na.omit(as.numeric(data[[33]]))[1:584]
+
+l <- c()
+for(v in frec_resp){
+  if(!(v>=1 & v<=300)){
+    l <- c(l,v)
+  }
+}
+
+
+errores <- errores + length(l)
+
+which(data[[33]]==" -")
+
+```
+
+### temp_corp
+
+```{r}
+unicos[[34]]
+
+temp_corp <- na.omit(as.numeric(data[[34]]))[1:526]
+
+l <- c()
+for(v in temp_corp){
+  if(!(v>=1 & v<=300)){
+    l <- c(l,v)
+  }
+}
+
+which(data[[34]] == "Afebril")
+
+```
+
+#### eva
+
+<b style = 'color : Pregunta;'>rojo</b>,
+
+```{r}
+unicos[[35]]
+
+# de 1 a 10 pero solo hay hasta 8, bien?
+```
+
+#### tas
+
+```{r}
+unicos[[36]]
+
+which(data[36] == "º126")
+```
+
+#### tad
+
+```{r}
+unicos[[37]]
+
+#ok
+```
+
+#### sat_oxig
+
+```{r}
+unicos[[38]]
+#ok
+```
+
+#### vol_diuresis_dia
+
+```{r}
+unicos[[39]]
+
+which(data[39] == " -")
+```
+
+#### leucos
+
+```{r}
+valores <- unicos[[40]]
+
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm)
+
+entre_rango <- valores_numer >= 1 & valores_numer <= 100000
+
+valores_numer[!entre_rango]
+
+
+which(data[[40]] == "5,40 x10^9")
+
+```
+
+#### linfos
+
+```{r}
+valores <- unicos[[41]]
+
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 1 & valores_numer <= 100000
+
+l <- valores_numer[!entre_rango]
+errores <- errores + length(l)
+```
+
+```{r}
+which(data[[41]] == "0,9")
+```
+
+#### neutrofilos
+
+```{r}
+
+valores <- unicos[[42]]
+
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 1 & valores_numer <= 100000
+
+valores_numer[!entre_rango]
+
+which(data[[42]] == "0.7")
+```
+
+#### hemoglobina
+
+```{r, warning=FALSE}
+
+valores <- unicos[[43]]
+
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 1 & valores_numer <= 20
+
+l <- valores_numer[!entre_rango]
+errores <- errores + length(l)
+```
+
+```{r}
+which(data[[43]] == "112")
+```
+
+#### plaquetas
+
+```{r}
+valores <- unicos[[44]]
+
+l <- c()
+for(v in valores){
+  if(grepl("x", v)){
+    l <- c(l,v)
+  }
+}
+l
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 10000  & valores_numer <= 1000000
+
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[44]] == i))
+  
+}
+check
+which(data[[45]] %in% l)
+```
+
+
+#### creatinina
+
+```{r, warning=FALSE}
+valores <- unicos[[45]]
+
+l <- c()
+for(v in valores){
+  if(grepl("x|\\-|<|º|/", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 0 & valores_numer <= 20
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+valores_for
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[45]] == i))
+  
+}
+check
+which(data[[45]] %in% l)
+
+```
+
+#### proteinas
+
+```{r, warning=FALSE}
+valores <- unicos[[46]]
+
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 0 & valores_numer <= 1000
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+cambiar <- gsub(",", ".", data[[46]])
+
+for(i in valores_for){
+  check <- c(check, which(data[[46]] == i))
+  
+}
+find <- c(check,which(data[[46]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+#### albumina
+
+```{r, warning=FALSE}
+valores <- unicos[[47]]
+
+l <- c()
+for(v in valores){
+  if(grepl("x|\\-|<|º|/", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 0 & valores_numer <= 10
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+cambiar <- gsub(",", ".", data[[47]])
+
+for(i in valores_for){
+  check <- c(check, which(cambiar == i))
+  
+}
+find <- c(check,which(data[[47]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+
+```
+
+#### pcr
+
+```{r, warning=FALSE}
+valores <- unicos[[48]]
+l <- c()
+for(v in valores){
+  if(grepl("x|\\-|<|º|/", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 0 & valores_numer <= 1000
+
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+
+valores_for
+l
+```
+
+```{r}
+check <- c()
+cambiar <- gsub(",", ".", data[[48]])
+
+for(i in valores_for){
+  check <- c(check, which(cambiar == i))
+  
+}
+find <- c(check,which(data[[48]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+
+#### procalcitonina
+
+```{r, warning=FALSE}
+valores <- unicos[[49]]
+l <- c()
+for(v in valores){
+  if(grepl("x|\\-|<|º|/", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 0 & valores_numer <= 1000
+
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+
+valores_for
+l
+```
+
+```{r}
+check <- c()
+cambiar <- gsub(",", ".", data[[49]])
+
+for(i in valores_for){
+  check <- c(check, which(cambiar == i))
+  
+}
+
+find <- c(check,which(data[[49]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+
+#### il6
+
+```{r, warning=FALSE}
+valores <- unicos[[50]]
+l <- c()
+for(v in valores){
+  if(grepl("x|\\-|<|º|/", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 0 & valores_numer <= 1000
+
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+
+valores_for
+l
+```
+
+```{r}
+check <- c()
+cambiar <- gsub(",", ".", data[[50]])
+
+for(i in valores_for){
+  check <- c(check, which(cambiar == i))
+  
+}
+find <- c(check,which(data[[50]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+
+
+#### quiq
+
+```{r, warning=FALSE}
+valores <- unicos[[51]]
+l <- c()
+for(v in valores){
+  if(grepl("x|\\-|<|º|/", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 0 & valores_numer <= 100
+
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+
+valores_for
+l
+```
+
+```{r}
+check <- c()
+cambiar <- gsub(",", ".", data[[51]])
+
+for(i in valores_for){
+  check <- c(check, which(cambiar == i))
+  
+}
+find <- c(check,which(data[[51]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+
+
+
+#### acondicionamienio
+
+```{r, warning=FALSE}
+valores <- unicos[[54]]
+l <- c()
+for(v in valores){
+  if(grepl("x|\\-|<|º|/", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 0 & valores_numer <= 2
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+
+valores_for
+l
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[54]] == i))
+  
+}
+check
+which(data[[54]] %in% l)
+```
+
+
+#### tipo_cirugia
+
+```{r, warning=FALSE}
+valores <- unicos[[55]]
+l <- c()
+for(v in valores){
+  if(grepl("x|\\-|<|º|/", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 0 & valores_numer <= 8
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+
+valores_for
+l
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[55]] == i))
+  
+}
+check
+which(data[[55]] %in% l)
+```
+
+
+
+
+#### abordaje
+
+```{r, warning=FALSE}
+valores <- unicos[[56]]
+l <- c()
+for(v in valores){
+  if(grepl("x|\\-|<|º|/", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 0 & valores_numer <= 3
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+
+valores_for
+l
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[56]] == i))
+  
+}
+check
+which(data[[56]] %in% l)
+```
+
+
+
+
+#### perdida_sang
+
+```{r, warning=FALSE}
+valores <- unicos[[57]]
+l <- c()
+for(v in valores){
+  if(grepl("x|\\-|<|º|/", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 0 & valores_numer <= 6000
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+
+valores_for
+l
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[57]] == i))
+  
+}
+check
+which(data[[57]] %in% l)
+```
+
+
+
+#### tipo_plastia
+
+```{r, warning=FALSE}
+valores <- unicos[[58]]
+l <- c()
+for(v in valores){
+  if(grepl("x|\\-|<|º|/", v)){
+    l <- c(l,v)
+  }
+}
+
+# 0 y 1, pero se esperan: ESTÓMAGO, COLON, YEYUNO y OTROS.
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 0 & valores_numer <= 4
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+
+valores_for
+l
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[58]] == i))
+  
+}
+check
+which(data[[58]] %in% l)
+```
+
+
+#### via_asc_plastia
+
+```{r, warning=FALSE}
+valores <- unicos[[59]]
+l <- c()
+for(v in valores){
+  if(grepl("x|\\-|<|º|/", v)){
+    l <- c(l,v)
+  }
+}
+
+
+# 0 y 1, pero se esperan: MEDIASTINO, RETROESTERNAL y SUBCUTANEO
+
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 0 & valores_numer <= 3
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+
+valores_for
+l
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[59]] == i))
+  
+}
+check
+which(data[[59]] %in% l)
+```
+
+
+#### anastomosis
+
+```{r, warning=FALSE}
+valores <- unicos[[60]]
+l <- c()
+for(v in valores){
+  if(grepl("x|\\-|<|º|/", v)){
+    l <- c(l,v)
+  }
+}
+
+# Hay 5 categorías pero 4 tipos: 
+#   - CERVICAL ESOFAGO-PLASTIA
+# 	- INTRATRORÁCICA ESOFAGO-PLASTIA
+# 	- GASTROYEYUNOSTOMÍA
+# 	- ESOFAGOYEYUNOSTOMÍA
+
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 0 & valores_numer <= 4
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+
+valores_for
+l
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[60]] == i))
+  
+}
+check
+which(data[[60]] %in% l)
+```
+
+
+
+#### tipo_anastomosis
+
+```{r, warning=FALSE}
+valores <- unicos[[61]]
+l <- c()
+for(v in valores){
+  if(grepl("x|\\-|<|º|/", v)){
+    l <- c(l,v)
+  }
+}
+
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 0 & valores_numer <= 3
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+
+valores_for
+l
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[61]] == i))
+  
+}
+check
+which(data[[61]] %in% l)
+```
+
+
+
+#### piloro
+
+```{r, warning=FALSE}
+valores <- unicos[[62]]
+l <- c()
+for(v in valores){
+  if(grepl("x|\\-|<|º|/", v)){
+    l <- c(l,v)
+  }
+}
+
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 0 & valores_numer <= 1
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+
+valores_for
+l
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[62]] == i))
+  
+}
+check
+which(data[[62]] %in% l)
+```
+
+
+
+#### icg
+
+```{r, warning=FALSE}
+valores <- unicos[[63]]
+l <- c()
+for(v in valores){
+  if(grepl("x|\\-|<|º|/", v)){
+    l <- c(l,v)
+  }
+}
+
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 0 & valores_numer <= 1
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+
+valores_for
+l
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[63]] == i))
+  
+}
+check
+which(data[[63]] %in% l)
+```
+
+
+
+
+
+########################
+
+
+#### post_frec_card
+
+```{r, warning=FALSE}
+valores <- unicos[[65]]
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 1 & valores_numer <= 300
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[65]] == i))
+  
+}
+
+find <- c(check,which(data[[65]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+
+```
+
+
+#### post_frec_resp
+
+
+```{r, warning=FALSE}
+valores <- unicos[[66]]
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 1 & valores_numer <= 80
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[66]] == i))
+  
+}
+
+find <- c(check,which(data[[66]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+### post_temp_corp
+
+```{r, warning=FALSE}
+valores <- unicos[[67]]
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 1 & valores_numer <= 80
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[67]] == i))
+  
+}
+
+find <- c(check,which(data[[67]] %in% l))
+find <- sort(unique(find+1))
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+#### post_eva
+
+<b style = 'color : Pregunta;'>rojo</b>,
+
+```{r}
+unicos[[68]]
+
+# En este sí de 0 a 10
+```
+
+#### post_tas
+
+```{r, warning=FALSE}
+valores <- unicos[[69]]
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 40 & valores_numer <= 300
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[69]] == i))
+  
+}
+
+find <- c(check,which(data[[69]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+#### post_tad
+
+```{r, warning=FALSE}
+valores <- unicos[[70]]
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores_norm)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 10 & valores_numer <= 200
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[70]] == i))
+  
+}
+
+find <- c(check,which(data[[70]] %in% l))
+find <- sort(unique(find+1))
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+#### post_sat_oxig
+
+```{r, warning=FALSE}
+valores <- unicos[[71]]
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores_norm)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 10 & valores_numer <= 200
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[71]] == i))
+  
+}
+
+find <- c(check,which(data[[71]] %in% l))
+find <- sort(unique(find+1))
+for(a in find){
+  cat(a, ", ")
+}
+
+```
+
+#### post_vol_diuresis_dia
+
+```{r, warning=FALSE}
+valores <- unicos[[72]]
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores_norm)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 10 & valores_numer <= 20000
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[72]] == i))
+  
+}
+
+find <- c(check,which(data[[72]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+#### post_leucos
+
+```{r, warning=FALSE}
+valores <- unicos[[73]]
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores_norm)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 1 & valores_numer <= 100000
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[73]] == i))
+  
+}
+
+find <- c(check,which(data[[73]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+#### post_linfos
+
+```{r, warning=FALSE}
+valores <- unicos[[74]]
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores_norm)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 1 & valores_numer <= 100000
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[74]] == i))
+  
+}
+
+find <- c(check,which(data[[74]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+#### post_neutrofilos
+
+```{r, warning=FALSE}
+valores <- unicos[[75]]
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores_norm)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 1 & valores_numer <= 100000
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[75]] == i))
+  
+}
+
+find <- c(check,which(data[[75]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+#### post_hemoglobina
+
+```{r, warning=FALSE}
+valores <- unicos[[76]]
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores_norm)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 1 & valores_numer <= 20
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[76]] == i))
+  
+}
+
+find <- c(check,which(data[[76]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+
+```
+
+#### post_plaquetas
+
+```{r, warning=FALSE}
+valores <- unicos[[77]]
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores_norm)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 10000 & valores_numer <= 1000000
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[77]] == i))
+  
+}
+
+find <- c(check,which(data[[77]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+#### post_creatinina
+
+
+```{r, warning=FALSE}
+valores <- unicos[[78]]
+
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 0 & valores_numer <= 20
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[78]] == i))
+  
+}
+
+find <- c(check,which(data[[78]] %in% l))
+
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+#### post_proteinas
+
+```{r, warning=FALSE}
+valores <- unicos[[79]]
+
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 0 & valores_numer <= 10
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[79]] == i))
+  
+}
+
+find <- c(check,which(data[[79]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+
+#### post_albumina
+
+```{r, warning=FALSE}
+valores <- unicos[[80]]
+
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 0 & valores_numer <= 10
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[80]] == i))
+  
+}
+
+find <- c(check,which(data[[80]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+#### post_pcr
+
+```{r, warning=FALSE}
+valores <- unicos[[81]]
+
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 0 & valores_numer <= 1000
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+
+cambiar <- gsub(",", ".", data[[81]])
+
+for(i in valores_for){
+  check <- c(check, which(cambiar == i))
+  
+}
+
+find <- c(check,which(data[[81]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+
+#### post_procalcitonina
+
+```{r, warning=FALSE}
+valores <- unicos[[82]]
+
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 0 & valores_numer <= 1000
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+cambiar <- gsub(",", ".", data[[82]])
+
+for(i in valores_for){
+  check <- c(check, which(cambiar == i))
+  
+}
+
+find <- c(check,which(data[[82]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+
+#### post_il6
+
+```{r, warning=FALSE}
+valores <- unicos[[83]]
+
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 0 & valores_numer <= 1000
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+cambiar <- gsub(",", ".", data[[83]])
+for(i in valores_for){
+  check <- c(check, which(cambiar == i))
+  
+}
+
+find <- c(check,which(data[[83]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+
+
+#### post_quick
+
+```{r, warning=FALSE}
+valores <- unicos[[84]]
+
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 0 & valores_numer <= 100
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[84]] == i))
+  
+}
+find <- c(check,which(data[[84]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+
+#### das_postoperatorios_complete
+
+<b style = 'color :?????;'>rojo</b>,
+
+```{r}
+unicos[[85]]
+
+```
+
+#### pt
+
+<b style = 'color : Pregunta;'>rojo</b>,
+
+```{r}
+unicos[[86]]
+
+# de 0 a 6 pero 11 en el doc
+```
+
+
+#### pn
+
+<b style = 'color : Pregunta;'>rojo</b>,
+
+```{r}
+unicos[[87]]
+
+# de 0 a 1 pero 5 en el doc
+```
+
+
+#### pm
+
+<b style = 'color : Pregunta;'>rojo</b>,
+
+```{r}
+unicos[[88]]
+
+# ok
+```
+
+
+
+
+#################
+
+#### dia_tolerancia_oral
+
+```{r, warning=FALSE}
+valores <- unicos[[89]]
+
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|/|%|\\.|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 0 & valores_numer <= 90
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+for(i in valores_for){
+  check <- c(check, which(data[[89]] == i))
+  
+}
+find <- c(check,which(data[[89]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+
+
+```
+
+```{r}
+wb <- loadWorkbook("data/ModeloPredictivoPara_DATA_2024-11-26_1247_anonimizado.xlsx")  # Cambia la ruta a tu archivo
+# Colorear las celdas de la columna CK
+for (fila in find) {
+    addStyle(wb, sheet = 1, style = createStyle(fgFill = "#FF0000"), rows = fila, cols = "CK", gridExpand = TRUE)
+}
+
+# Guardar el archivo
+saveWorkbook(wb, "data/ModeloPredictivoPara_DATA_2024-11-26_1247_anonimizado.xlsx", overwrite = TRUE)  # Cambia la ruta a donde quieres guardar el archivo
+
+```
+
+
+
+#### fecha_alta
+
+```{r, warning=FALSE}
+valores <- unicos[[90]]
+
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+l
+```
+
+#### clavien_dindo
+
+```{r}
+unicos[[91]]
+```
+
+
+#### fuga
+
+```{r}
+unicos[[92]]
+
+```
+
+
+#### dia_fuga
+
+```{r, warning=FALSE}
+valores <- unicos[[93]]
+
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 0 & valores_numer <= 90
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+cambiar <- gsub(",", ".", data[[93]])
+for(i in valores_for){
+  check <- c(check, which(cambiar == i))
+  
+}
+find <- c(check,which(data[[93]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+
+```{r}
+wb <- loadWorkbook("data/ModeloPredictivoPara_DATA_2024-11-26_1247_anonimizado.xlsx")  # Cambia la ruta a tu archivo
+# Colorear las celdas de la columna CK
+for (fila in find) {
+    addStyle(wb, sheet = 1, style = createStyle(fgFill = "#FF0000"), rows = fila, cols = "CO", gridExpand = TRUE)
+}
+
+# Guardar el archivo
+saveWorkbook(wb, "data/ModeloPredictivoPara_DATA_2024-11-26_1247_anonimizado.xlsx", overwrite = TRUE)  # Cambia la ruta a donde quieres guardar el archivo
+
+```
+
+
+
+
+
+#### dia_resolucion_fuga
+
+```{r, warning=FALSE}
+valores <- unicos[[97]]
+
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 1 & valores_numer <= 200
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+cambiar <- gsub(",", ".", data[[97]])
+for(i in valores_for){
+  check <- c(check, which(cambiar == i))
+  
+}
+find <- c(check,which(data[[97]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+
+```{r}
+wb <- loadWorkbook("data/ModeloPredictivoPara_DATA_2024-11-26_1247_anonimizado.xlsx")  # Cambia la ruta a tu archivo
+# Colorear las celdas de la columna CK
+for (fila in find) {
+    addStyle(wb, sheet = 1, style = createStyle(fgFill = "#FF0000"), rows = fila, cols = "CS", gridExpand = TRUE)
+}
+
+# Guardar el archivo
+saveWorkbook(wb, "data/ModeloPredictivoPara_DATA_2024-11-26_1247_anonimizado.xlsx", overwrite = TRUE)  # Cambia la ruta a donde quieres guardar el archivo
+
+```
+
+
+
+#### dia_necrosis
+
+```{r, warning=FALSE}
+valores <- unicos[[135]]
+
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 1 & valores_numer <= 90
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+cambiar <- gsub(",", ".", data[[135]])
+for(i in valores_for){
+  check <- c(check, which(cambiar == i))
+  
+}
+find <- c(check,which(data[[135]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+
+```{r}
+wb <- loadWorkbook("data/ModeloPredictivoPara_DATA_2024-11-26_1247_anonimizado.xlsx")  # Cambia la ruta a tu archivo
+
+for (fila in find) {
+    addStyle(wb, sheet = 1, style = createStyle(fgFill = "#FF0000"), rows = fila, cols = "EE", gridExpand = TRUE)
+}
+
+# Guardar el archivo
+saveWorkbook(wb, "data/ModeloPredictivoPara_DATA_2024-11-26_1247_anonimizado.xlsx", overwrite = TRUE)  # Cambia la ruta a donde quieres guardar el archivo
+
+```
+
+
+
+#### dia_quilotorax
+
+```{r, warning=FALSE}
+valores <- unicos[[139]]
+
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\.|/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 1 & valores_numer <= 90
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+cambiar <- gsub(",", ".", data[[139]])
+for(i in valores_for){
+  check <- c(check, which(cambiar == i))
+  
+}
+find <- c(check,which(data[[139]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+
+```{r}
+wb <- loadWorkbook("data/ModeloPredictivoPara_DATA_2024-11-26_1247_anonimizado.xlsx")  # Cambia la ruta a tu archivo
+
+for (fila in find) {
+    addStyle(wb, sheet = 1, style = createStyle(fgFill = "#FF0000"), rows = fila, cols = "EI", gridExpand = TRUE)
+}
+
+# Guardar el archivo
+saveWorkbook(wb, "data/ModeloPredictivoPara_DATA_2024-11-26_1247_anonimizado.xlsx", overwrite = TRUE)  # Cambia la ruta a donde quieres guardar el archivo
+
+```
+
+
+
+
+#### dia_recurrente
+
+```{r, warning=FALSE}
+valores <- unicos[[141]]
+
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\.|/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 1 & valores_numer <= 90
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+cambiar <- gsub(",", ".", data[[141]])
+for(i in valores_for){
+  check <- c(check, which(cambiar == i))
+  
+}
+find <- c(check,which(data[[141]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+
+
+
+
+#### dia_infeccion_resp
+
+```{r, warning=FALSE}
+valores <- unicos[[143]]
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\.|/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 1 & valores_numer <= 90
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+cambiar <- gsub(",", ".", data[[143]])
+for(i in valores_for){
+  check <- c(check, which(cambiar == i))
+  
+}
+find <- c(check,which(data[[143]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+```{r}
+wb <- loadWorkbook("data/ModeloPredictivoPara_DATA_2024-11-26_1247_anonimizado.xlsx")  # Cambia la ruta a tu archivo
+
+for (fila in find) {
+    addStyle(wb, sheet = 1, style = createStyle(fgFill = "#FF0000"), rows = fila, cols = "EM", gridExpand = TRUE)
+}
+
+# Guardar el archivo
+saveWorkbook(wb, "data/ModeloPredictivoPara_DATA_2024-11-26_1247_anonimizado.xlsx", overwrite = TRUE)  # Cambia la ruta a donde quieres guardar el archivo
+
+```
+
+
+
+
+
+
+
+
+#### dia_infeccion_sitio_quir
+
+```{r, warning=FALSE}
+valores <- unicos[[145]]
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\.|/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 1 & valores_numer <= 90
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+cambiar <- gsub(",", ".", data[[145]])
+for(i in valores_for){
+  check <- c(check, which(cambiar == i))
+  
+}
+find <- c(check,which(data[[145]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+```{r}
+wb <- loadWorkbook("data/ModeloPredictivoPara_DATA_2024-11-26_1247_anonimizado.xlsx")  # Cambia la ruta a tu archivo
+
+for (fila in find) {
+    addStyle(wb, sheet = 1, style = createStyle(fgFill = "#FF0000"), rows = fila, cols = "EO", gridExpand = TRUE)
+}
+
+# Guardar el archivo
+saveWorkbook(wb, "data/ModeloPredictivoPara_DATA_2024-11-26_1247_anonimizado.xlsx", overwrite = TRUE)  # Cambia la ruta a donde quieres guardar el archivo
+
+```
+
+
+
+
+#### dia_infeccion_herida
+
+```{r, warning=FALSE}
+valores <- unicos[[147]]
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\.|/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 1 & valores_numer <= 90
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+cambiar <- gsub(",", ".", data[[147]])
+for(i in valores_for){
+  check <- c(check, which(cambiar == i))
+  
+}
+find <- c(check,which(data[[147]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+```{r}
+wb <- loadWorkbook("data/ModeloPredictivoPara_DATA_2024-11-26_1247_anonimizado.xlsx")  # Cambia la ruta a tu archivo
+
+for (fila in find) {
+    addStyle(wb, sheet = 1, style = createStyle(fgFill = "#FF0000"), rows = fila, cols = "EQ", gridExpand = TRUE)
+}
+
+# Guardar el archivo
+saveWorkbook(wb, "data/ModeloPredictivoPara_DATA_2024-11-26_1247_anonimizado.xlsx", overwrite = TRUE)  # Cambia la ruta a donde quieres guardar el archivo
+
+```
+
+
+
+#### dia_mortalidad
+
+```{r, warning=FALSE}
+valores <- unicos[[150]]
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\.|/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 1 & valores_numer <= 90
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+cambiar <- gsub(",", ".", data[[150]])
+for(i in valores_for){
+  check <- c(check, which(cambiar == i))
+  
+}
+find <- c(check,which(data[[150]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+```{r}
+wb <- loadWorkbook("data/ModeloPredictivoPara_DATA_2024-11-26_1247_anonimizado.xlsx")  # Cambia la ruta a tu archivo
+
+for (fila in find) {
+    addStyle(wb, sheet = 1, style = createStyle(fgFill = "#FF0000"), rows = fila, cols = "ET", gridExpand = TRUE)
+}
+
+# Guardar el archivo
+saveWorkbook(wb, "data/ModeloPredictivoPara_DATA_2024-11-26_1247_anonimizado.xlsx", overwrite = TRUE)  # Cambia la ruta a donde quieres guardar el archivo
+
+```
+
+
+
+
+
+
+#### causa
+
+```{r, warning=FALSE}
+valores <- unicos[[151]]
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\.|/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+valores
+# Hay 6 categorias, contamos dese 1?
+```
+
+
+#### reingreso
+
+```{r, warning=FALSE}
+valores <- unicos[[153]]
+valores
+```
+
+
+
+#### dia_reingreso
+
+```{r, warning=FALSE}
+valores <- unicos[[154]]
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\.|/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+
+
+```{r, warning=FALSE}
+valores_norm <- gsub("'", ".", valores)
+valores_norm <- gsub(",", ".", valores)
+valores_norm <- gsub("\\.(?=[0-9]{3}\\b)", "", valores_norm, perl = TRUE)
+
+valores_numer <- as.numeric(valores_norm) 
+
+valores_bin <- !is.na(valores_numer)
+
+entre_rango <- valores_numer >= 1 & valores_numer <= 90
+
+valores_for <- valores_numer[!is.na(valores_numer) & !entre_rango]
+```
+
+```{r}
+check <- c()
+cambiar <- gsub(",", ".", data[[154]])
+for(i in valores_for){
+  check <- c(check, which(cambiar == i))
+  
+}
+find <- c(check,which(data[[154]] %in% l))
+find <- sort(unique(find+1))
+
+for(a in find){
+  cat(a, ", ")
+}
+```
+
+```{r}
+wb <- loadWorkbook("data/ModeloPredictivoPara_DATA_2024-11-26_1247_anonimizado.xlsx")  # Cambia la ruta a tu archivo
+
+for (fila in find) {
+    addStyle(wb, sheet = 1, style = createStyle(fgFill = "#FF0000"), rows = fila, cols = "EX", gridExpand = TRUE)
+}
+
+# Guardar el archivo
+saveWorkbook(wb, "data/ModeloPredictivoPara_DATA_2024-11-26_1247_anonimizado.xlsx", overwrite = TRUE)  # Cambia la ruta a donde quieres guardar el archivo
+
+```
+
+
+
+#### dia_reingreso
+
+```{r, warning=FALSE}
+valores <- unicos[[155]]
+l <- c()
+for(v in valores){
+  if(grepl("\\-|<|>|º|\\.|/|%|\\*|[A-Z]|[a-z]", v)){
+    l <- c(l,v)
+  }
+}
+```
+

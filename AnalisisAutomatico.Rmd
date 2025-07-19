@@ -1,0 +1,270 @@
+---
+title: "AnalisisAutomatico"
+author: "Joel Giner"
+date: "2024-12-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Carga de librerias
+
+```{r}
+library(readr)
+library(tidyr)
+library(dplyr)
+library(openxlsx)
+```
+
+
+
+
+```{r}
+data <- read.csv("data/ModeloPredictivoPara_DATA_2024-11-26_1247_anonimizado.csv", sep = ";", colClasses = "character") %>%
+  select(-c("X","X.1"))
+head(data)
+n <- length(colnames(data))
+```
+
+```{r}
+
+```
+
+
+
+
+```{r}
+column_to_excel_name <- function(column_index) {
+  result <- ""
+  while (column_index > 0) {
+    remainder <- (column_index - 1) %% 26
+    result <- paste0(LETTERS[remainder + 1], result)
+    column_index <- (column_index - 1) %/% 26
+  }
+  return(result)
+}
+
+# Generar los primeros 154 nombres de columnas de Excel
+excelColumns <- sapply(1:154, column_to_excel_name)
+
+# Mostrar la lista de nombres de columnas
+#print(excelColumns)
+
+```
+
+
+#### Archivo config
+
+```{r}
+# df <- data.frame(variable = colnames(data))
+# df$'caracteres' <- ""
+# df$'tipo' <- ""
+# df$'rango' <- ""
+# 
+# write.csv(df, "caracteres.csv", row.names = FALSE)
+```
+
+
+```{r}
+rangos <- read.csv("variablesRangos.csv", sep = ";", colClasses = "character")
+
+```
+
+
+#### numeric
+```{r}
+
+numericCol <- function(data, var, i){
+  
+  range <- unlist(strsplit(rangos[i,]$rango, "-")) #prepara el rango posible de la variable
+  data[,var] <- gsub("'", ".", data[,var])        #cambia ' por .
+  data[,var] <- gsub(",", ".", data[,var])       # cambia , por .
+  data[,var] <- gsub("\\.(?=[0-9]{3}\\b)", "", data[,var], perl = TRUE) #elimina el punto de millares
+  data[,var][data[,var] == " -"] <- ""
+  data[,var][data[,var] == "-"] <- ""
+  data[,var][data[,var] == " --"] <- ""
+  
+  if(!startsWith(colnames(data[i]),"dia")){
+    #data[,var] <- as.numeric(data[,var]) #transforma la variable a numerica
+  }
+  
+  columna_numerica <- as.numeric(data[,var])
+  errores <- columna_numerica[which(!(columna_numerica >= as.numeric(range[1]) & 
+                                        columna_numerica <= as.numeric(range[2])))]
+  # print(errores)
+
+  return(list(data = data, errores = length(errores)))
+}
+```
+
+
+
+
+#### categoric
+
+```{r}
+categoricCol <- function(data, var, i){
+  range <- unlist(strsplit(rangos[i,]$rango, "-")) #prepara el rango posible de la variable
+  
+  errores <- 0
+  return(list(data = data, errores = errores))
+}
+
+```
+
+#### date
+```{r}
+
+dateCol <- function(data, var, i){
+  a <- data[,var]
+  d <- c()
+  dates <- strsplit(a,"/")
+  for(date in dates){
+    if(length(date)==3){
+      if(date[3]>25){
+        date[3] <- paste("19",date[3], sep = "")
+      }else{
+        date[3] <- paste("20",date[3], sep = "")
+      }
+      date <- paste(date[1],paste(date[2],date[3],sep="/"),sep = "/")
+      d <- c(d,date)
+    } else {
+      d <- c(d,"")
+    }
+    
+  }
+  
+  d <- gsub("-", "/", d)        #cambia - por /
+  d <- gsub("\\.", "/", d)        #cambia . por /
+
+  #data[,var] <- as.Date(d, format="%d/%m/%Y")
+  
+  errores <- 0
+  return(list(data = data, errores = errores))
+}
+
+```
+
+
+
+#### colour cells
+```{r}
+colourCells <- function(var,i){
+  l <- c()
+  check <- 0
+  num = FALSE
+  colored = FALSE
+  if(rangos$tipo[i] == "numeric"){
+    num = TRUE
+    range <- unlist(strsplit(rangos[i,]$rango, "-")) #prepara el rango posible de la variable
+    if(is.na(range[1])){
+      num=FALSE
+    }
+    columna_numerica <- as.numeric(data[,var])
+  }
+  print(as.numeric(range[1]))
+  print(as.numeric(range[2]))
+  print(var)
+  for(row in seq_along(data[,var])){
+    
+    if(num && !is.na(columna_numerica[row])){
+
+      if (!(columna_numerica[row] >= as.numeric(range[1]) & 
+         columna_numerica[row] <= as.numeric(range[2]))) {
+        addStyle(wb, sheet = 1, style = createStyle(fgFill = "#FF0000"), 
+                rows = row+1, cols = excelColumns[i], gridExpand = TRUE)
+        check <- check + 1
+      }
+    }
+    
+    if(grepl("\\-|<|>|º|/|%|\\*|[A-Z]|[a-z]", data[,var][row])){
+      if(data[,var][row] != "-" & data[,var][row] != " -" & data[,var][row] != " --"){
+        
+        addStyle(wb, sheet = 1, style = createStyle(fgFill = "#FF0000"), 
+                 rows = row+1, cols = excelColumns[i], gridExpand = TRUE)
+        check <- check + 1
+        
+        }
+    }
+    if(check > 0 & !colored){
+      addStyle(wb, sheet = 1, style = createStyle(fgFill = "#ffa0a0"), 
+                   rows = 1, cols = excelColumns[i], gridExpand = TRUE)
+      colored = TRUE
+    }
+  }
+  return(check)
+}
+```
+
+
+
+
+#### Analisis Variables en bucle
+
+```{r, warning=FALSE}
+e <- 0
+
+for(i in seq_along(rangos$variable)){
+  tipo_var <- rangos$tipo[i]  
+
+  if(tipo_var == "numeric"){
+    res <- numericCol(data, rangos$variable[i], i)
+    data <- res$data
+    e <- e + res$errores
+  }else if(tipo_var == "categoric"){
+    res <- categoricCol(data, rangos$variable[i],i)
+    data <- res$data
+    e <- e + res$errores  
+  }else if(tipo_var == "date"){
+    res <- dateCol(data, rangos$variable[i],i)
+    data <- res$data
+    e <- e + res$errores    
+  }else if(tipo_var == "text"){
+  }
+  
+}
+write.xlsx(data, file = "data/Cambios_2025-03-28.xlsx")
+
+wb <- loadWorkbook("data/Cambios_2025-03-28.xlsx")
+columns <- rangos$variable[which(rangos$tipo == "numeric")]
+
+for(col in columns){
+  num <- which(colnames(data) == col)
+  errors <- colourCells(col, num)
+  e <- e + errors
+}
+e
+gc()
+saveWorkbook(wb, "data/Cambios_2025-03-28.xlsx", overwrite = TRUE)
+
+```
+
+
+
+```{r, warning=FALSE}
+vars = rangos[rangos$tipo =="numeric","variable"]
+
+```
+
+```{r}
+a <- data.frame(minimos = numeric(), maximos = numeric())
+# Calcular los mínimos y máximos de cada columna numérica
+minimos <- sapply(data, function(x) if(is.numeric(x)) min(x, na.rm = TRUE) else NA)
+maximos <- sapply(data, function(x) if(is.numeric(x)) max(x, na.rm = TRUE) else NA)
+
+
+# Eliminar los NAs para que no se guarden filas vacías
+minimos <- na.omit(minimos)
+maximos <- na.omit(maximos)
+
+# Crear el data frame correctamente con los valores
+# a <- data.frame(minimos, maximos)
+# a["vars"] = vars
+# a
+# write.csv(a, "rangosOriginal.csv", row.names = FALSE)
+```
+
+
+
